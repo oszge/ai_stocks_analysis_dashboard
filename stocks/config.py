@@ -11,5 +11,6 @@ def settings():
     defaults = dict(OPENAI_API_KEY='', OPENAI_MODEL='',
                     DATABASE_URL=f'sqlite:///{(ROOT / "data/stocks.db").as_posix()}',
                     EODHD_API_KEY='',
-                    REPORT_SYMBOLS='OTP.BUD,MOL.BUD,RICHTER.BUD,MTELEKOM.BUD,4IG.BUD,ANY.BUD,WABERERS.BUD,GRAPHISOFT.BUD')
+                    REPORT_SYMBOLS='OTP.BUD,MOL.BUD,RICHTER.BUD,MTELEKOM.BUD,4IG.BUD,ANY.BUD,OPUS.BUD,AUTOW.BUD')
     return {k: os.environ.get(k, values.get(k, v)) for k, v in defaults.items()}
+

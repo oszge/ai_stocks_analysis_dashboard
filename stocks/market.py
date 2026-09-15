@@ -4,8 +4,8 @@ import math
 import pandas as pd
 import pandas_market_calendars as mcal
 
-DEFAULT_SYMBOLS = ('OTP.BUD', 'MOL.BUD', 'RICHTER.BUD', 'MTELEKOM.BUD', '4IG.BUD', 'ANY.BUD', 'WABERERS.BUD', 'GRAPHISOFT.BUD')
-BENCHMARK = 'BUX.BUD'
+DEFAULT_SYMBOLS = ('OTP.BUD', 'MOL.BUD', 'RICHTER.BUD', 'MTELEKOM.BUD', '4IG.BUD', 'ANY.BUD', 'OPUS.BUD', 'AUTOW.BUD')
+BENCHMARK = 'BET.BUD'
 
 
 def sessions(start: date, end: date):
@@ -59,3 +59,4 @@ def metrics(frame):
     result = pd.DataFrame(rows).set_index('symbol')
     result['vs_spy_pp'] = result.change_pct - (result.loc[BENCHMARK, 'change_pct'] if BENCHMARK in result.index else float('nan'))
     return result
+

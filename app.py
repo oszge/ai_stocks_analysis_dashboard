@@ -38,12 +38,12 @@ with st.sidebar:
 with st.sidebar:
     selected = st.multiselect('Stocks (5–8)', DEFAULT_SYMBOLS,
                               default=list(DEFAULT_SYMBOLS),
-                              help='Choose up to eight Hungarian stocks; BUX.BUD is added as the benchmark.')
+                              help='Choose up to eight Hungarian stocks; BET.BUD is added as the benchmark.')
     window = st.selectbox('History (calendar days)', [30, 60, 90], index=1)
     auto = st.toggle('Automatic refresh', value=True)
     interval = st.select_slider('Refresh interval (seconds)', [15, 30, 60], value=30)
-    st.caption('Benchmark: BUX.BUD · Budapest trading calendar')
-    st.caption('EODHD covers one exchange. BUX.BUD is included as the benchmark.')
+    st.caption('Benchmark: BET.BUD · Budapest trading calendar')
+    st.caption('EODHD covers one exchange. BET.BUD is included as the benchmark.')
     st.caption('Refresh runs while this page is open and does not call OpenAI.')
 
 if not selected:
@@ -180,16 +180,16 @@ def analysis_panel():
         st.dataframe(table.rename(columns={
             'close': 'Close (HUF)', 'change_HUF': 'Daily change (HUF)', 'change_pct': 'Daily change (%)',
             'volume': 'EODHD volume (shares)', 'range_pct': 'Daily range / close (%)',
-            'vs_BUX.BUD_pp': 'Difference from BUX.BUD (percentage points)'}).round(2), width='stretch')
+            'vs_BET.BUD_pp': 'Difference from BET.BUD (percentage points)'}).round(2), width='stretch')
         if BENCHMARK not in available:
-            st.warning('BUX.BUD history is unavailable. Benchmark differences are not calculated.')
+            st.warning('BET.BUD history is unavailable. Benchmark differences are not calculated.')
         if not common.empty:
             st.subheader('Price return over common sessions')
             st.caption(f'{common.index[0]} to {common.index[-1]}')
             st.dataframe(((common.iloc[-1] / common.iloc[0] - 1) * 100).rename('Price return (%)').round(2), width='stretch')
     with ai_tab:
         st.subheader('Verified daily report')
-        st.caption('Reports cover all selected stocks plus BUX.BUD for the previous calendar day in Budapest. Live trades are not included.')
+        st.caption('Reports cover all selected stocks plus BET.BUD for the previous calendar day in Budapest. Live trades are not included.')
         enabled = bool(config['OPENAI_API_KEY'] and config['OPENAI_MODEL'])
         if not enabled:
             st.info('Set OPENAI_API_KEY and OPENAI_MODEL for AI fact selection. Verified templates can run without OpenAI.')
@@ -217,6 +217,7 @@ def analysis_panel():
         st.dataframe(valid_frame, width='stretch', hide_index=True)
 
 analysis_panel()
+
 
 
 
