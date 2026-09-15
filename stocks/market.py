@@ -4,8 +4,8 @@ import math
 import pandas as pd
 import pandas_market_calendars as mcal
 
-DEFAULT_SYMBOLS = ('AAPL', 'MSFT', 'NVDA', 'AMZN', 'GOOGL', 'META', 'TSLA')
-BENCHMARK = 'SPY'
+DEFAULT_SYMBOLS = ('OTP.BUD', 'MOL.BUD', 'RICHTER.BUD', 'MTELEKOM.BUD', '4IG.BUD', 'ANY.BUD', 'WABERERS.BUD', 'GRAPHISOFT.BUD')
+BENCHMARK = 'BUX.BUD'
 
 
 def sessions(start: date, end: date):
@@ -33,7 +33,7 @@ def validate(frame, target, symbols):
         errors.append('Inconsistent OHLC data.')
     if (frame.date > target).any() or not frame.final.eq(True).all():
         errors.append('Future or unfinished daily bars.')
-    if not frame.currency.eq('USD').all() or frame.source.isna().any() or frame.source.eq('').any():
+    if not frame.currency.eq('HUF').all() or frame.source.isna().any() or frame.source.eq('').any():
         errors.append('Missing source or unsupported currency.')
     if not set(frame.date).issubset({x.date() for x in sessions(frame.date.min(), target)}):
         errors.append('Data outside trading sessions.')

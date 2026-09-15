@@ -5,7 +5,7 @@ import json
 
 from stocks.market import DEFAULT_SYMBOLS, BENCHMARK, sessions, validate, metrics
 from stocks.summary import facts_for, select_with_openai, validate_selection, render
-from stocks.live import AlpacaProvider
+from stocks.live import EODHDProvider
 from stocks.storage import connect, read, save
 
 
@@ -25,7 +25,7 @@ def run(config, target=None, use_ai=False, selector=None, symbols=None):
     symbols = tuple(dict.fromkeys([s.strip().upper() for s in requested if s.strip()] + [BENCHMARK]))
     if symbols == (BENCHMARK,) and not requested:
         return {'status': 'FAILED', 'errors': ['Select at least one stock.']}
-    frame = AlpacaProvider(config).history(symbols, target - timedelta(days=100), target)
+    frame = EODHDProvider(config).history(symbols, target - timedelta(days=100), target)
     errors = validate(frame, target, symbols)
     if errors:
         return {'status': 'FAILED', 'errors': errors}
@@ -46,7 +46,7 @@ def run(config, target=None, use_ai=False, selector=None, symbols=None):
             return {'status': 'FAILED', 'errors': errors}
         result = dict(status='PASSED', target=str(target), mode=mode, summary=render(ids, facts),
                       fact_ids=ids, facts=facts, snapshot=json.loads(snapshot), language='en',
-                      symbols=list(symbols), source='ALPACA/IEX', model=config['OPENAI_MODEL'] if use_ai else None,
+                      symbols=list(symbols), source='EODHD/BUD', model=config['OPENAI_MODEL'] if use_ai else None,
                       prompt_sha256=hashlib.sha256(prompt.encode()).hexdigest())
         save(engine, key, target, mode, result)
         return result
