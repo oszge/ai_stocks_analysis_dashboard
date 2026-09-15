@@ -178,9 +178,9 @@ def analysis_panel():
         chart_layout(fig).update_yaxes(ticksuffix='%')
         show_chart(fig, 'daily_change')
         st.dataframe(table.rename(columns={
-            'close': 'Close (HUF)', 'change_HUF': 'Daily change (HUF)', 'change_pct': 'Daily change (%)',
+            'close': 'Close (HUF)', 'change_usd': 'Daily change (HUF)', 'change_pct': 'Daily change (%)',
             'volume': 'EODHD volume (shares)', 'range_pct': 'Daily range / close (%)',
-            'vs_BET.BUD_pp': 'Difference from BET.BUD (percentage points)'}).round(2), width='stretch')
+            'vs_spy_pp': 'Difference from BET.BUD (percentage points)'}).round(2), width='stretch')
         if BENCHMARK not in available:
             st.warning('BET.BUD history is unavailable. Benchmark differences are not calculated.')
         if not common.empty:
@@ -217,6 +217,7 @@ def analysis_panel():
         st.dataframe(valid_frame, width='stretch', hide_index=True)
 
 analysis_panel()
+
 
 
 
