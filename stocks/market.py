@@ -9,7 +9,9 @@ BENCHMARK = 'BET.BUD'
 
 
 def sessions(start: date, end: date):
-    return mcal.get_calendar('NYSE').schedule(start_date=start, end_date=end).index
+    # EODHD BUD data follows Budapest business days.  Avoid the NYSE calendar
+    # here, which incorrectly rejects valid Hungarian sessions.
+    return pd.DatetimeIndex(pd.bdate_range(start=start, end=end, tz='UTC'))
 
 
 def validate(frame, target, symbols):
