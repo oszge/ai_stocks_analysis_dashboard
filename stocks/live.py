@@ -54,7 +54,12 @@ class EODHDProvider:
                 return json.load(response)
         except HTTPError as exc:
             messages = {401: 'Invalid EODHD API key.', 403: 'EODHD access denied.', 429: 'EODHD rate limit reached.'}
-            raise MarketDataError(messages.get(exc.code, 'EODHD is unavailable.')) from None
+            detail = ''
+            try:
+                detail = exc.read().decode('utf-8', errors='replace')[:180]
+            except Exception:
+                pass
+            raise MarketDataError(f"{messages.get(exc.code, f'EODHD HTTP {exc.code}.')} {detail}".strip()) from None
         except (URLError, TimeoutError, ValueError):
             raise MarketDataError('The data provider timed out or returned an invalid response.') from None
 
