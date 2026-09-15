@@ -30,7 +30,7 @@ def run(config, target=None, use_ai=False, selector=None, symbols=None):
     if errors:
         return {'status': 'FAILED', 'errors': errors}
     facts = facts_for(metrics(frame), target)
-    mode = ('ai' if use_ai else 'template') + ':alpaca:iex:en'
+    mode = ('ai' if use_ai else 'template') + ':eodhd:bud:en'
     from pathlib import Path
     prompt = (Path(__file__).resolve().parents[1] / 'prompts/daily_summary.txt').read_text(encoding='utf-8')
     snapshot = frame.to_json(orient='records', date_format='iso')

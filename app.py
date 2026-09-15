@@ -205,8 +205,8 @@ def analysis_panel():
                     st.info(result['message'])
                 else:
                     st.error('FAILED · ' + '; '.join(result['errors']))
-            except Exception:
-                st.error('Report generation failed. Check your API settings.')
+            except Exception as exc:
+                st.error(f'Report generation failed: {exc}')
         result = st.session_state.get('last_report')
         if result and result.get('language') == 'en' and set(result.get('symbols', [])) == set(symbols):
             st.success('PASSED · ' + result['mode'])
