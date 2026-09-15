@@ -1,0 +1,1 @@
+"""Validated stock analysis foundation."""
