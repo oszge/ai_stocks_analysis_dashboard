@@ -42,7 +42,7 @@ with st.sidebar:
     window = st.selectbox('History (calendar days)', [30, 60, 90], index=1)
     auto = st.toggle('Automatic refresh', value=True)
     interval = st.select_slider('Refresh interval (seconds)', [15, 30, 60], value=30)
-    st.caption('Benchmark: BUX.BUD · Regular US trading calendar')
+    st.caption('Benchmark: BUX.BUD · Budapest trading calendar')
     st.caption('EODHD covers one exchange. BUX.BUD is included as the benchmark.')
     st.caption('Refresh runs while this page is open and does not call OpenAI.')
 
@@ -74,7 +74,7 @@ def live_panel():
         for col, symbol in zip(st.columns(len(subset)), subset):
             row = live.loc[symbol]
             daily = daily_table.loc[symbol] if symbol in daily_table.index else None
-            delta = f'{daily.change_HUF:+.2f} HUF ({daily.change_pct:+.2f}%)' if daily is not None else None
+            delta = f'{daily.change_usd:+.2f} HUF ({daily.change_pct:+.2f}%)' if daily is not None else None
             col.metric(symbol + ' · latest trade', f'{row.price:,.2f} HUF' if pd.notna(row.price) else 'Unavailable', delta)
             stamp = row.timestamp.tz_convert('Europe/Budapest').strftime('%Y-%m-%d %H:%M:%S %Z') if pd.notna(row.timestamp) else 'No timestamp'
             col.caption(f'{stamp} · {row.status}')
@@ -217,6 +217,8 @@ def analysis_panel():
         st.dataframe(valid_frame, width='stretch', hide_index=True)
 
 analysis_panel()
+
+
 
 
 
