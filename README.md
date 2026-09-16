@@ -1,6 +1,6 @@
 # Stock Intelligence
 
-A live US equity dashboard with a platinum theme, interactive Plotly charts,
+A live US equity dashboard with interactive Plotly charts,
 verified English daily reports, and an Alpaca IEX market-data connection.
 
 ## Start locally
