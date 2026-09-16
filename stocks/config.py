@@ -10,7 +10,6 @@ def settings():
     values = tomllib.loads(path.read_text(encoding='utf-8')) if path.exists() else {}
     defaults = dict(OPENAI_API_KEY='', OPENAI_MODEL='',
                     DATABASE_URL=f'sqlite:///{(ROOT / "data/stocks.db").as_posix()}',
-                    EODHD_API_KEY='',
-                    REPORT_SYMBOLS='OTP.BUD,MOL.BUD,RICHTER.BUD,MTELEKOM.BUD,4IG.BUD,ANY.BUD,OPUS.BUD,AUTOW.BUD')
+                    ALPACA_API_KEY='', ALPACA_SECRET_KEY='',
+                    REPORT_SYMBOLS='AAPL,MSFT,NVDA')
     return {k: os.environ.get(k, values.get(k, v)) for k, v in defaults.items()}
-

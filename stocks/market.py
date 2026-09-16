@@ -4,14 +4,12 @@ import math
 import pandas as pd
 import pandas_market_calendars as mcal
 
-DEFAULT_SYMBOLS = ('OTP.BUD', 'MOL.BUD', 'RICHTER.BUD', 'MTELEKOM.BUD', '4IG.BUD', 'ANY.BUD', 'OPUS.BUD', 'AUTOW.BUD')
-BENCHMARK = 'BET.BUD'
+DEFAULT_SYMBOLS = ('AAPL', 'MSFT', 'NVDA', 'AMZN', 'GOOGL', 'META', 'TSLA')
+BENCHMARK = 'SPY'
 
 
 def sessions(start: date, end: date):
-    # EODHD BUD data follows Budapest business days.  Avoid the NYSE calendar
-    # here, which incorrectly rejects valid Hungarian sessions.
-    return pd.DatetimeIndex(pd.bdate_range(start=start, end=end, tz='UTC'))
+    return mcal.get_calendar('NYSE').schedule(start_date=start, end_date=end).index
 
 
 def validate(frame, target, symbols):
@@ -35,7 +33,7 @@ def validate(frame, target, symbols):
         errors.append('Inconsistent OHLC data.')
     if (frame.date > target).any() or not frame.final.eq(True).all():
         errors.append('Future or unfinished daily bars.')
-    if not frame.currency.eq('HUF').all() or frame.source.isna().any() or frame.source.eq('').any():
+    if not frame.currency.eq('USD').all() or frame.source.isna().any() or frame.source.eq('').any():
         errors.append('Missing source or unsupported currency.')
     if not set(frame.date).issubset({x.date() for x in sessions(frame.date.min(), target)}):
         errors.append('Data outside trading sessions.')
@@ -61,4 +59,3 @@ def metrics(frame):
     result = pd.DataFrame(rows).set_index('symbol')
     result['vs_spy_pp'] = result.change_pct - (result.loc[BENCHMARK, 'change_pct'] if BENCHMARK in result.index else float('nan'))
     return result
-

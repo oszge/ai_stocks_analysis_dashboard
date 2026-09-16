@@ -1,4 +1,4 @@
-"""Read-only EODHD market data for Budapest-listed securities."""
+"""Read-only Alpaca IEX data and the paper-account US equity catalog."""
 from datetime import datetime, time, timezone
 from zoneinfo import ZoneInfo
 import json
@@ -39,56 +39,77 @@ def batches(symbols, size=100):
         yield symbols[start:start + size]
 
 
-class EODHDProvider:
+class AlpacaProvider:
     def __init__(self, config):
-        self.key = config.get('EODHD_API_KEY', '')
-        if not self.key:
-            raise MarketDataError('Set EODHD_API_KEY in .streamlit/secrets.toml.')
+        self.key = config.get('ALPACA_API_KEY', '')
+        self.secret = config.get('ALPACA_SECRET_KEY', '')
+        if not self.key or not self.secret:
+            raise MarketDataError('Set ALPACA_API_KEY and ALPACA_SECRET_KEY in .streamlit/secrets.toml.')
 
     def _get(self, endpoint, params):
-        url = 'https://eodhd.com/api/' + endpoint
-        params = {**params, 'api_token': self.key, 'fmt': 'json'}
-        request = Request(url + '?' + urlencode(params))
+        url = 'https://data.alpaca.markets/v2/stocks/' + endpoint
+        request = Request(url + '?' + urlencode(params),
+                          headers={'APCA-API-KEY-ID': self.key, 'APCA-API-SECRET-KEY': self.secret})
         try:
             with urlopen(request, timeout=15) as response:
                 return json.load(response)
         except HTTPError as exc:
-            messages = {401: 'Invalid EODHD API key.', 403: 'EODHD access denied.', 429: 'EODHD rate limit reached.'}
-            detail = ''
-            try:
-                detail = exc.read().decode('utf-8', errors='replace')[:180]
-            except Exception:
-                pass
-            raise MarketDataError(f"{messages.get(exc.code, f'EODHD HTTP {exc.code}.')} {detail}".strip()) from None
+            messages = {401: 'Invalid Alpaca credentials. Use your paper-account key pair.',
+                        403: 'Your account cannot access the requested Alpaca resource.',
+                        429: 'Alpaca rate limit reached. Wait and use a longer refresh interval.'}
+            raise MarketDataError(messages.get(exc.code, 'Alpaca is unavailable.')) from None
         except (URLError, TimeoutError, ValueError):
             raise MarketDataError('The data provider timed out or returned an invalid response.') from None
 
     def history(self, symbols, start, end):
-        if end > datetime.now().date():
+        zone = ZoneInfo('America/New_York')
+        now = datetime.now(zone)
+        if end > now.date() or (end == now.date() and market_open(now)):
             raise MarketDataError('Daily history requires a completed trading session.')
         rows = []
-        for symbol in symbols:
-            payload = self._get('eod/' + symbol, {'from': start.isoformat(), 'to': end.isoformat(), 'period': 'd', 'order': 'a'})
-            if not isinstance(payload, list): raise MarketDataError('Invalid historical data response.')
-            for bar in payload:
-                rows.append(dict(date=pd.Timestamp(bar['date']).date(), symbol=symbol, open=bar['open'], high=bar['high'], low=bar['low'], close=bar['close'], volume=bar.get('volume', 0), currency='HUF', source='EODHD/BUD', final=True))
+        for group in batches(symbols):
+            params = dict(symbols=','.join(group), timeframe='1Day',
+                          start=datetime.combine(start, time.min, zone).isoformat(),
+                          end=datetime.combine(end, time.max, zone).isoformat(),
+                          adjustment='split', feed='iex', limit=10000, sort='asc')
+            seen = set()
+            while True:
+                payload = self._get('bars', params)
+                if not isinstance(payload, dict):
+                    raise MarketDataError('Invalid historical data response.')
+                for symbol, bars in (payload.get('bars') or {}).items():
+                    for bar in bars:
+                        day = pd.Timestamp(bar['t']).tz_convert(zone).date()
+                        rows.append(dict(date=day, symbol=symbol, open=bar['o'], high=bar['h'],
+                                         low=bar['l'], close=bar['c'], volume=bar['v'], currency='USD',
+                                         source='ALPACA/IEX/SPLIT', final=True))
+                token = payload.get('next_page_token')
+                if not token:
+                    break
+                if token in seen:
+                    raise MarketDataError('The provider returned a repeated pagination token.')
+                seen.add(token)
+                params['page_token'] = token
         return pd.DataFrame(rows, columns=BAR_COLUMNS)
 
     def snapshots(self, symbols):
         rows = []
         for group in batches(symbols):
+            payload = self._get('snapshots', {'symbols': ','.join(group), 'feed': 'iex'})
+            if not isinstance(payload, dict):
+                raise MarketDataError('Invalid snapshot response.')
             for symbol in group:
-                payload = self._get('real-time/' + symbol, {})
-                if not isinstance(payload, dict):
-                    payload = {}
-                price, timestamp, status = None, pd.NaT, 'No valid delayed quote available'
+                price, timestamp, status = None, pd.NaT, 'No valid IEX trade available'
                 try:
-                    price = float(payload.get('close') or payload.get('last'))
-                    timestamp = pd.Timestamp(payload.get('timestamp') or payload.get('datetime'), unit='s', tz='UTC') if payload.get('timestamp') else pd.Timestamp(payload.get('datetime'), tz='UTC')
-                    status = freshness(timestamp)
-                except (TypeError, ValueError):
+                    trade = payload[symbol]['latestTrade']
+                    candidate = float(trade['p'])
+                    stamp = pd.Timestamp(trade['t'])
+                    if not math.isfinite(candidate) or candidate <= 0 or pd.isna(stamp) or stamp.tzinfo is None:
+                        raise ValueError()
+                    status = freshness(stamp)
+                    price, timestamp = candidate, stamp
+                except (KeyError, TypeError, ValueError):
                     pass
-                rows.append(dict(symbol=symbol, price=price, timestamp=timestamp, status=status, source='EODHD/BUD'))
+                rows.append(dict(symbol=symbol, price=price, timestamp=timestamp,
+                                 status=status, source='ALPACA/IEX'))
         return pd.DataFrame(rows, columns=['symbol', 'price', 'timestamp', 'status', 'source']).set_index('symbol')
-
-AlpacaProvider = EODHDProvider

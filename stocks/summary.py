@@ -12,11 +12,11 @@ def facts_for(table, target):
     facts = {}
     for symbol, row in table.iterrows():
         facts[f'{symbol}:daily'] = (
-            f'{target}: {symbol} closed at {row.close:.2f} HUF, '
-            f'daily price change {row.change_usd:+.2f} HUF ({row.change_pct:+.2f}%), volume {int(row.volume):,} shares.')
-        if symbol != 'BET.BUD':
+            f'{target}: {symbol} closed at {row.close:.2f} USD, '
+            f'daily price change {row.change_usd:+.2f} USD ({row.change_pct:+.2f}%), volume {int(row.volume):,} shares.')
+        if symbol != 'SPY':
             facts[f'{symbol}:benchmark'] = (
-                f'{symbol} daily return differs from BET.BUD by {row.vs_spy_pp:+.2f} percentage points.')
+                f'{symbol} daily return differs from SPY by {row.vs_spy_pp:+.2f} percentage points.')
     return facts
 
 
@@ -53,7 +53,3 @@ def render(ids, facts):
     if errors:
         raise ValueError('; '.join(errors))
     return '\n\n'.join(facts[i] for i in ids)
-
-
-
-
