@@ -10,14 +10,14 @@ from stocks.market import DEFAULT_SYMBOLS, BENCHMARK, sessions, validate, metric
 from stocks.live import AlpacaProvider, MarketDataError, freshness, market_open
 from stocks.pipeline import run
 
-st.set_page_config(page_title='Stock Intel', page_icon='📈', layout='wide')
+st.set_page_config(page_title='Stock Intelligence', page_icon='📈', layout='wide')
 apply_style()
 config = settings()
 credentials = {key: config.get(key, '') for key in ('ALPACA_API_KEY', 'ALPACA_SECRET_KEY')}
 if not all(credentials.values()):
     st.error('Alpaca credentials are missing. Set ALPACA_API_KEY and ALPACA_SECRET_KEY in Streamlit Secrets. If both are already set, deploy stocks/config.py together with app.py and reboot the app.')
     st.stop()
-st.html('''<div class="hero"><div><div class="eyebrow">STOCK INTELLIGENCE / MARKET OVERVIEW</div>
+st.html('''<div class="hero"><div><div class="eyebrow">STOCK INTEL / MARKET OVERVIEW</div>
 <h1>Stock Intelligence<span style="color:#9bb1c5">.</span></h1>
 <p>Live prices and verified market analysis.</p></div>
 <div class="hero-badge">ALPACA / IEX</div></div>''')
