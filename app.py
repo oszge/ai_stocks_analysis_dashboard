@@ -17,9 +17,8 @@ credentials = {key: config.get(key, '') for key in ('ALPACA_API_KEY', 'ALPACA_SE
 if not all(credentials.values()):
     st.error('Alpaca credentials are missing. Set ALPACA_API_KEY and ALPACA_SECRET_KEY in Streamlit Secrets. If both are already set, deploy stocks/config.py together with app.py and reboot the app.')
     st.stop()
-st.html('''<div class="hero"><div><div class="eyebrow">STOCK INTEL / MARKET OVERVIEW</div>
-<h1>Stock Intelligence<span style="color:#9bb1c5">.</span></h1>
-<p>Live prices and verified market analysis.</p></div>
+st.html('''<div class="hero"><div><div class="eyebrow">STOCK INTELLIGENCE / MARKET OVERVIEW</div>
+<h1>Stock Intel<span style="color:#9bb1c5">.</span></h1>
 <div class="hero-badge">ALPACA / IEX</div></div>''')
 
 @st.cache_data(ttl=300, show_spinner=False)
