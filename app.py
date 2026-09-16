@@ -10,7 +10,7 @@ from stocks.market import DEFAULT_SYMBOLS, BENCHMARK, sessions, validate, metric
 from stocks.live import AlpacaProvider, MarketDataError, freshness, market_open
 from stocks.pipeline import run
 
-st.set_page_config(page_title='Stock Intelligence', page_icon='📈', layout='wide')
+st.set_page_config(page_title='Stock Intel', page_icon='📈', layout='wide')
 apply_style()
 config = settings()
 credentials = {key: config.get(key, '') for key in ('ALPACA_API_KEY', 'ALPACA_SECRET_KEY')}
